@@ -1,9 +1,8 @@
 // script.js
 
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
-import { getDatabase, ref, set, get, child, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // Konfigurasi Firebase
 const firebaseConfig = {
@@ -21,6 +20,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getDatabase(app);
+
 
 const questions = [
   {
@@ -226,12 +226,11 @@ const questions = [
 ];
 
 
-
+// Variabel kuis
 let currentQuestion = 0;
 let selectedAnswers = Array(questions.length).fill(null);
 let timeLeft = 20 * 60;
 let timer;
-
 let userName = "", userAbsen = "", userKelas = "";
 
 // DOM
@@ -242,11 +241,13 @@ const resultScreen = document.getElementById("result-screen");
 const leaderboardList = document.getElementById("leaderboard-list");
 const classDisplay = document.getElementById("class-display");
 
+// Tombol Mulai Kuis
 document.getElementById("open-form-btn").onclick = () => {
   startScreen.style.display = "none";
   formScreen.style.display = "block";
 };
 
+// Tombol Mulai Sekarang
 document.getElementById("start-btn").onclick = () => {
   const name = document.getElementById("user-name").value.trim();
   const absen = document.getElementById("user-absen").value.trim();
@@ -265,6 +266,7 @@ document.getElementById("start-btn").onclick = () => {
   timer = setInterval(updateTimer, 1000);
 };
 
+// Timer
 function updateTimer() {
   if (timeLeft <= 0) {
     clearInterval(timer);
@@ -277,6 +279,7 @@ function updateTimer() {
   timeLeft--;
 }
 
+// Tampilkan soal
 function showQuestion() {
   const q = questions[currentQuestion];
   document.getElementById("question-text").textContent = `${currentQuestion + 1}. ${q.question}`;
@@ -295,6 +298,7 @@ function showQuestion() {
   });
 }
 
+// Navigasi soal
 function updateNav() {
   const nav = document.getElementById("question-nav");
   nav.innerHTML = "";
@@ -313,6 +317,7 @@ function updateNav() {
   });
 }
 
+// Tombol selanjutnya
 document.getElementById("next-btn").onclick = () => {
   if (currentQuestion < questions.length - 1) {
     currentQuestion++;
@@ -329,6 +334,7 @@ document.getElementById("next-btn").onclick = () => {
   }
 };
 
+// Tombol sebelumnya
 document.getElementById("prev-btn").onclick = () => {
   if (currentQuestion > 0) {
     currentQuestion--;
@@ -337,6 +343,7 @@ document.getElementById("prev-btn").onclick = () => {
   }
 };
 
+// Tampilkan hasil
 function showResult() {
   quizScreen.style.display = "none";
   resultScreen.style.display = "block";
@@ -364,17 +371,31 @@ function showResult() {
   set(ref(db, path), entry).then(() => loadLeaderboard(userKelas));
 }
 
+// ✅ Fungsi yang diperbaiki untuk memuat leaderboard
 function loadLeaderboard(kelas) {
-  const q = query(ref(db, `leaderboard/${kelas}`), orderByChild("score"));
-  get(q).then(snapshot => {
-    const list = [];
-    snapshot.forEach(child => list.push(child.val()));
-    list.sort((a, b) => b.score - a.score); // descending
+  const leaderboardRef = ref(db, `leaderboard/${kelas}`);
+  get(leaderboardRef).then(snapshot => {
+    if (!snapshot.exists()) {
+      leaderboardList.innerHTML = "<li>Belum ada data untuk kelas ini.</li>";
+      return;
+    }
+
+    const entries = [];
+    snapshot.forEach(child => {
+      entries.push(child.val());
+    });
+
+    // Urutkan berdasarkan skor tertinggi
+    entries.sort((a, b) => b.score - a.score);
+
     leaderboardList.innerHTML = "";
-    list.forEach((e, i) => {
+    entries.forEach((entry, index) => {
       const li = document.createElement("li");
-      li.textContent = `${i + 1}. ${e.name} (Absen: ${e.absen}) - ${e.score}%`;
+      li.textContent = `${index + 1}. ${entry.name} (Absen: ${entry.absen}) - ${entry.score}%`;
       leaderboardList.appendChild(li);
     });
+  }).catch(error => {
+    console.error("Gagal memuat leaderboard:", error);
+    leaderboardList.innerHTML = "<li>Gagal memuat leaderboard.</li>";
   });
 }
