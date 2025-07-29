@@ -380,16 +380,22 @@ function loadLeaderboard(kelas) {
       return;
     }
 
-    const entries = [];
+    const latestEntries = {};
+
     snapshot.forEach(child => {
-      entries.push(child.val());
+      const data = child.val();
+      const name = data.name;
+      // Simpan hanya entri terbaru per nama
+      if (!latestEntries[name] || data.timestamp > latestEntries[name].timestamp) {
+        latestEntries[name] = data;
+      }
     });
 
-    // Urutkan berdasarkan skor tertinggi
-    entries.sort((a, b) => b.score - a.score);
+    // Ubah jadi array dan sort
+    const sortedEntries = Object.values(latestEntries).sort((a, b) => b.score - a.score);
 
     leaderboardList.innerHTML = "";
-    entries.forEach((entry, index) => {
+    sortedEntries.forEach((entry, index) => {
       const li = document.createElement("li");
       li.textContent = `${index + 1}. ${entry.name} (Absen: ${entry.absen}) - ${entry.score}%`;
       leaderboardList.appendChild(li);
