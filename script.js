@@ -1,14 +1,15 @@
 // script.js
 
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getDatabase, ref, set, get, child, query, orderByChild } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+import { getDatabase, ref, set, get, child, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-// Firebase config
+// Konfigurasi Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDNUme5dcYQi6pKR3gpdRUp1wHxQSiP2q4",
   authDomain: "quiz-evaluasi-hairstyle.firebaseapp.com",
-  databaseURL: "https://quiz-evaluasi-hairstyle-default-rtdb.asia-southeast1.firebasedatabase.app",
+  databaseURL: "https://quiz-evaluasi-hairstyle-default-rtdb.firebaseio.com",
   projectId: "quiz-evaluasi-hairstyle",
   storageBucket: "quiz-evaluasi-hairstyle.appspot.com",
   messagingSenderId: "892621648220",
@@ -16,7 +17,9 @@ const firebaseConfig = {
   measurementId: "G-WT3C7QDT5N"
 };
 
+// Inisialisasi Firebase
 const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
 const db = getDatabase(app);
 
 const questions = [
